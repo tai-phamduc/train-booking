@@ -33,9 +33,7 @@ SELECT e.*
 FROM Employee e JOIN Account a 
 ON e.EmployeeID = a.EmployeeID
 WHERE a.Username = @user;
-GO
-
-CREATE TABLE Train (
+GOCREATE TABLE Train (
     TrainID INT PRIMARY KEY IDENTITY(1,1),       
     TrainNumber VARCHAR(50) NOT NULL,      
     Status NVARCHAR(50) NOT NULL              
@@ -62,6 +60,8 @@ CREATE TABLE Seat (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+
 GO
 
 
@@ -558,8 +558,18 @@ SELECT * FROM dbo.GetTrainJourneysByStationNames(N'Biên Hòa', N'Tháp Chàm', 
 
 select * from stop join station on stop.stationID = station.stationID where trainJourneyID = 9 
 
--------------------------------------
---- create new function 16/10
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------- create new function 16/10---------------------
+
 CREATE FUNCTION dbo.GetTrainJourneysByStationNames
 (
     @departureStationName NVARCHAR(255),
@@ -625,6 +635,7 @@ RETURN
 );
 
 
+
 CREATE FUNCTION dbo.GetDistanceBetweenStops(
     @trainJourneyID INT,
     @stationID1 INT,
@@ -650,10 +661,6 @@ BEGIN
     RETURN @distance;
 END;
 
-SELECT *
-FROM ticket
-
-
 CREATE TABLE Service (
     serviceID INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementing primary key starting from 1
     serviceName NVARCHAR(100) NOT NULL,        -- Adjust length as needed
@@ -675,28 +682,91 @@ CREATE TABLE ServiceDetail (
         ON DELETE CASCADE   -- Optional: cascade deletion
 );
 
-delete from service
-
 INSERT INTO Service (serviceName, price, type, imageSource, quantity) 
 VALUES 
-    ('Bánh Mì Thịt', 35.00, N'đồ ăn', 'images/test_image.png', 100),
-    ('Trà Sữa Trân Châu', 45.00, N'nước uống', 'images/test_image.png', 100);
+    ('Bánh Mì Thịt', 40000, N'đồ ăn', 'images/test_image.png', 100),
+    ('Trà Sửa Trân Châu', 40000, N'nước uống', 'images/test_image.png', 100),
+    ('Phở Bò', 80000, N'đồ ăn', 'images/test_image.png', 100),
+    ('Cà Phê Sửa Đá', 40000, N'nước uống', 'images/test_image.png', 100);
+-----------------------------------------------
+CREATE FUNCTION GetStopsForJourney (
+    @trainJourneyID INT,
+    @departureStationID INT,
+    @arrivalStationID INT
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+    SELECT 
+        s1.stopID, 
+        s1.trainJourneyID, 
+        s1.stationID, 
+        st.stationName, 
+        s1.stopOrder, 
+        s1.distance, 
+        s1.departureDate, 
+        s1.arrivalTime, 
+        s1.departureTime
+    FROM 
+        Stop s1
+    JOIN 
+        Station st ON s1.stationID = st.stationID
+    JOIN 
+        Stop s2 ON s1.trainJourneyID = s2.trainJourneyID
+    JOIN 
+        Stop s3 ON s1.trainJourneyID = s3.trainJourneyID
+    WHERE 
+        s1.trainJourneyID = @trainJourneyID
+        AND s2.stationID = @departureStationID 
+        AND s3.stationID = @arrivalStationID 
+        AND s1.stopOrder BETWEEN s2.stopOrder AND s3.stopOrder
+);
+go
 
-INSERT INTO Service (serviceName, price, type, imageSource, quantity) 
-VALUES 
-    ('Phở Bò', 50.00, N'đồ ăn', 'images/test_image.png', 100),
-    ('Cà Phê Sữa Đá', 30.00, N'nước uống', 'images/test_image.png', 100);
-
-SELECT DISTINCT type FROM Service;
-
-SELECT serviceid, servicename, price, type, imagesource FROM SERVICE WHERE TYPE = N'đồ ăn'
-
-
-
-
-
-
-
-
-
-
+----------------------------------------
+CREATE FUNCTION dbo.fn_GetUnavailableSeats (
+    @trainJourneyID INT,
+    @departureStationID INT,
+    @arrivalStationID INT
+)
+RETURNS TABLE
+AS
+RETURN
+WITH BookedSeats AS (
+    SELECT 
+        t.seatID, 
+        MIN(stop1.stopOrder) AS bookedStartOrder,
+        MAX(stop2.stopOrder) AS bookedEndOrder
+    FROM 
+        Ticket t
+    JOIN TicketDetail td1 ON t.ticketID = td1.ticketID
+    JOIN Stop stop1 ON td1.stopID = stop1.stopID  
+    JOIN TicketDetail td2 ON t.ticketID = td2.ticketID
+    JOIN Stop stop2 ON td2.stopID = stop2.stopID  
+    WHERE 
+        t.trainJourneyID = @trainJourneyID
+    GROUP BY 
+        t.seatID
+)
+SELECT 
+    s.SeatID, 
+    s.SeatNumber, 
+    c.CoachNumber, 
+    c.CoachType
+FROM 
+    Seat s
+JOIN Coach c ON s.CoachID = c.CoachID
+JOIN BookedSeats bs ON s.SeatID = bs.seatID
+JOIN Stop depStop ON depStop.stationID = @departureStationID 
+                  AND depStop.trainJourneyID = @trainJourneyID
+JOIN Stop arrStop ON arrStop.stationID = @arrivalStationID 
+                  AND arrStop.trainJourneyID = @trainJourneyID
+WHERE 
+    depStop.stopOrder < arrStop.stopOrder  -- Ensure correct journey direction
+    AND (
+        depStop.stopOrder BETWEEN bs.bookedStartOrder AND bs.bookedEndOrder
+        OR arrStop.stopOrder BETWEEN bs.bookedStartOrder AND bs.bookedEndOrder
+        OR bs.bookedStartOrder BETWEEN depStop.stopOrder AND arrStop.stopOrder
+    )
+go

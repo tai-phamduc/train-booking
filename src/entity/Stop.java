@@ -38,6 +38,10 @@ public class Stop {
 		this.departureTime = departureTime;
 	}
 
+	public Stop(int stopID) {
+		this.stopID = stopID;
+	}
+
 	public int getStopID() {
 		return stopID;
 	}

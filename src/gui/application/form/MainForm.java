@@ -64,7 +64,7 @@ public class MainForm extends JLayeredPane {
 //					Application.showMainForm(new FormStaffManagement(employee));
 //					break;
 				case 3:
-					Application.showMainForm(new FormSearchTrainJourney());
+					Application.showMainForm(new FormSearchTrainJourney(employee));
 					break;
 //				case 4:
 //					switch (subIndex) {

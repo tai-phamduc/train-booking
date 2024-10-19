@@ -21,6 +21,11 @@ public class Seat {
 		this.coach = coach;
 	}
 
+	public Seat(int seatID, int seatNumber) {
+		this.seatID = seatID;
+		this.seatNumber = seatNumber;
+	}
+
 	public int getSeatID() {
 		return seatID;
 	}

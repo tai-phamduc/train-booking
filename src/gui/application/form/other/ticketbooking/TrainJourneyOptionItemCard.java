@@ -13,6 +13,7 @@ import javax.swing.border.MatteBorder;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
+import entity.Employee;
 import entity.TrainJourneyOptionItem;
 import net.miginfocom.swing.MigLayout;
 
@@ -39,7 +40,7 @@ public class TrainJourneyOptionItemCard extends JPanel {
 	private JLabel thoiLuongChuyenTauLabel;
 	private JButton thoiLuongChuyenTauValue;
 	
-	public TrainJourneyOptionItemCard(TrainJourneyOptionItem trainJourneyOptionItem) {
+	public TrainJourneyOptionItemCard(TrainJourneyOptionItem trainJourneyOptionItem, Employee employee, TrainJourneyChoosingDialog trainJourneyChoosingDialog) {
 		
 		this.trainJourneyOptionItem = trainJourneyOptionItem;
 		
@@ -108,7 +109,7 @@ public class TrainJourneyOptionItemCard extends JPanel {
 		thoiLuongChuyenTauValue.putClientProperty(FlatClientProperties.STYLE, "foreground: $clr-white; background: $primary");
 		
 		thoiLuongChuyenTauValue.addActionListener(e -> {
-			SeatsChoosingDialog seatsChoosingDialog = new SeatsChoosingDialog(trainJourneyOptionItem);
+			SeatsChoosingDialog seatsChoosingDialog = new SeatsChoosingDialog(trainJourneyOptionItem, employee, trainJourneyChoosingDialog);
 			seatsChoosingDialog.setModal(true);
 			seatsChoosingDialog.setVisible(true);
 		});

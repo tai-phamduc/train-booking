@@ -25,6 +25,10 @@ public class Order {
 		this.employee = employee;
 	}
 
+	public Order(int orderID) {
+		this.orderID = orderID;
+	}
+
 	public int getOrderID() {
 		return orderID;
 	}

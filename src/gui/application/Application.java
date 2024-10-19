@@ -36,7 +36,7 @@ public class Application extends JFrame {
 //		setContentPane(loginForm);
 		employee = new Employee("1", "Pham Duc Tai", true, LocalDate.of(2003, 10, 27), "phamductai102703", "0846107843", "Manager", LocalDate.of(2024, 1, 5), 1000, "/images/avatar");
 		mainForm = new MainForm(employee);
-		mainForm.showForm(new FormSearchTrainJourney());
+		mainForm.showForm(new FormSearchTrainJourney(employee));
 		setContentPane(mainForm);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		app = this;

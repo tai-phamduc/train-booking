@@ -16,6 +16,13 @@ public class Customer {
 		this.identificationNumber = identificationNumber;
 	}
 
+	public Customer(String fullName, String phoneNumber, String email, String identificationNumber) {
+		this.fullName = fullName;
+		this.phoneNumber = phoneNumber;
+		this.email = email;
+		this.identificationNumber = identificationNumber;
+	}
+
 	public int getCustomerID() {
 		return customerID;
 	}

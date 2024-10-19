@@ -14,6 +14,17 @@ public class Passenger {
 		this.identificationNumber = identificationNumber;
 	}
 
+	public Passenger(String fullName, String passengerType, String identificationNumber) {
+		super();
+		this.fullName = fullName;
+		this.passengerType = passengerType;
+		this.identificationNumber = identificationNumber;
+	}
+
+	public Passenger() {
+		this.passengerType = "Người lớn";
+	}
+
 	public int getPassengerID() {
 		return passengerID;
 	}

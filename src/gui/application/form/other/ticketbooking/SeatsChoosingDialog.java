@@ -24,7 +24,9 @@ import dao.CoachDAO;
 import dao.SeatDAO;
 import dao.TrainJourneyDAO;
 import entity.Coach;
+import entity.Employee;
 import entity.Seat;
+import entity.Ticket;
 import entity.Train;
 import entity.TrainJourneyOptionItem;
 import net.miginfocom.swing.MigLayout;
@@ -77,13 +79,17 @@ public class SeatsChoosingDialog extends JDialog {
 	private JButton tiepTucButton;
 	private JPanel wrapper4;
 	private JButton goBackButton;
-	private List<Seat> chosenSeatList;
 	private TrainJourneyDAO trainJourneyDAO;
 	private TrainJourneyOptionItem trainJourneyOptionItem;
 	private JPanel wrapper3;
-	private ServiceChoosingDialog serviceChoosingDialog;
+	private ArrayList<Ticket> chosenTicketList;
+	private PassengerInfoAddingDialog passengerInfoAddingDialog;
+	private List<Seat> unavailableSeatList;
+	private TrainJourneyChoosingDialog trainJourneyChoosingDialog;
 
-	public SeatsChoosingDialog(TrainJourneyOptionItem trainJourneyOptionItem) {
+	public SeatsChoosingDialog(TrainJourneyOptionItem trainJourneyOptionItem, Employee employee, TrainJourneyChoosingDialog trainJourneyChoosingDialog) {
+		
+		this.trainJourneyChoosingDialog = trainJourneyChoosingDialog;
 		
 		coachDAO = new CoachDAO();
 		seatDAO = new SeatDAO();
@@ -93,9 +99,11 @@ public class SeatsChoosingDialog extends JDialog {
 		train = trainJourneyOptionItem.getTrain();
 		coachList = coachDAO.getCoaches(train);
 		
+		unavailableSeatList = trainJourneyDAO.getUnavailableSeats(trainJourneyOptionItem.getTrainJourneyID(), trainJourneyOptionItem.getDepartureStation(), trainJourneyOptionItem.getArrivalStation());
+		
 		// state
 		selectedCoach = coachList.get(0);
-		chosenSeatList = new ArrayList<Seat>();
+		chosenTicketList = new ArrayList<Ticket>();
 		// state
 		
 		this.setLayout(new BorderLayout());
@@ -240,41 +248,41 @@ public class SeatsChoosingDialog extends JDialog {
 				"" + "background:$Table.background;" + "track:$Table.background;" + "trackArc:999");
 		
 		tiepTucButton.addActionListener(e -> {
-			serviceChoosingDialog = new ServiceChoosingDialog(trainJourneyOptionItem, chosenSeatList);
-			serviceChoosingDialog.setModal(true);
-			serviceChoosingDialog.setVisible(true);
+			passengerInfoAddingDialog= new PassengerInfoAddingDialog(trainJourneyOptionItem, chosenTicketList, this, employee);
+			passengerInfoAddingDialog.setModal(true);
+			passengerInfoAddingDialog.setVisible(true);
 		});
 		
 	}
 	
-	private void reactToChosenListChanged() {
+	void reactToChosenListChanged() {
 		wrapper2.removeAll();
-		if (chosenSeatList.isEmpty()) {
+		if (chosenTicketList.isEmpty()) {
 			JLabel rong = new JLabel("Chưa có vé");
 			wrapper2.add(rong);
 		}
 		int tongCong = 0;
 		DecimalFormat decimalFormat = new DecimalFormat("#,###");
-		for (Seat chosenSeat : chosenSeatList) {			
+		for (Ticket chosenTicket : chosenTicketList) {			
 			JPanel veDuocChonContainer = new JPanel(new MigLayout("wrap, fill, insets 8 0 8 0", "[]push[]", "[][]"));
-			JLabel veDuocChonTen = new JLabel("Toa " + chosenSeat.getCoach().getCoachNumber() + " ghế " + chosenSeat.getSeatNumber());
+			JLabel veDuocChonTen = new JLabel("Toa " + chosenTicket.getSeat().getCoach().getCoachNumber() + " ghế " + chosenTicket.getSeat().getSeatNumber());
 			JButton xoaButton = new JButton(new FlatSVGIcon("gui/icon/svg/removeicon.svg", 0.35f));
 			JLabel loaiToaLabel = new JLabel();
-			if (chosenSeat.getCoach().getCoachType().equals("Ngồi mềm điều hòa") || chosenSeat.getCoach().getCoachType().equals("Ngồi mềm đều hòa")) {
+			if (chosenTicket.getSeat().getCoach().getCoachType().equals("Ngồi mềm điều hòa") || chosenTicket.getSeat().getCoach().getCoachType().equals("Ngồi mềm đều hòa")) {
 				loaiToaLabel.setText("NMDH");
-			} else if (chosenSeat.getCoach().getCoachType().equals("Giường nằm khoang 6 điều hòa")) {
+			} else if (chosenTicket.getSeat().getCoach().getCoachType().equals("Giường nằm khoang 6 điều hòa")) {
 				loaiToaLabel.setText("GNK6DH");
-			} else if (chosenSeat.getCoach().getCoachType().equals("Giường nằm khoang 4 điều hòa")) {
+			} else if (chosenTicket.getSeat().getCoach().getCoachType().equals("Giường nằm khoang 4 điều hòa")) {
 				loaiToaLabel.setText("GNK4DH");
 			}
 			double basePrice = trainJourneyDAO.getTrainJourneyByID(trainJourneyOptionItem.getTrainJourneyID()).getBasePrice();
 			int distance = trainJourneyDAO.getDistanceBetweenTwoStopsOfATrainJourney(trainJourneyOptionItem.getTrainJourneyID(), trainJourneyOptionItem.getDepartureStation(), trainJourneyOptionItem.getArrivalStation());
 			double heSoToa = 0;
-			if (chosenSeat.getCoach().getCoachType().equals("Ngồi mềm điều hòa") || chosenSeat.getCoach().getCoachType().equals("Ngồi mềm đều hòa")) {
+			if (chosenTicket.getSeat().getCoach().getCoachType().equals("Ngồi mềm điều hòa") || chosenTicket.getSeat().getCoach().getCoachType().equals("Ngồi mềm đều hòa")) {
 				heSoToa = 1;
-			} else if (chosenSeat.getCoach().getCoachType().equals("Giường nằm khoang 6 điều hòa")) {
+			} else if (chosenTicket.getSeat().getCoach().getCoachType().equals("Giường nằm khoang 6 điều hòa")) {
 				heSoToa = 1.2;
-			} else if (chosenSeat.getCoach().getCoachType().equals("Giường nằm khoang 4 điều hòa")) {
+			} else if (chosenTicket.getSeat().getCoach().getCoachType().equals("Giường nằm khoang 4 điều hòa")) {
 				heSoToa = 1.5;
 			}
 			double ticketPrice = basePrice * distance * heSoToa;
@@ -291,7 +299,7 @@ public class SeatsChoosingDialog extends JDialog {
 			veDuocChonContainer.setBorder(new MatteBorder(new Insets(0, 0, 2, 0), Color.black));
 			
 			xoaButton.addActionListener(e -> {
-				chosenSeatList.remove(chosenSeat);
+				chosenTicketList.remove(chosenTicket);
 				reactToSelectedCoachChanged();
 				reactToChosenListChanged();
 			});
@@ -311,7 +319,7 @@ public class SeatsChoosingDialog extends JDialog {
 		wrapper2.revalidate();
 	}
 
-	private void reactToSelectedCoachChanged() {
+	void reactToSelectedCoachChanged() {
 		container2.removeAll();
 		dauTauContainer= new JPanel(new MigLayout("flowy, insets 0, gap 0"));
 		dauTauLabel = new JLabel(new FlatSVGIcon("gui/icon/svg/dauTau.svg", 0.5f));
@@ -364,20 +372,38 @@ public class SeatsChoosingDialog extends JDialog {
 			seatButton.setPreferredSize(new Dimension(50, 50));
 			seatButton.setMargin(new Insets(0, 0, 0, 0));
 			
-			seatButton.addActionListener(e -> {
-				if (chosenSeatList.contains(seat)) {
-					chosenSeatList.remove(seat);
-				} else {
-					chosenSeatList.add(seat);
-				}
-				reactToSelectedCoachChanged();
-				reactToChosenListChanged();
-			});
-			
-			if (chosenSeatList.contains(seat)) {
+			if (unavailableSeatList.contains(seat)) {
 				seatButton.putClientProperty(FlatClientProperties.STYLE, "background: #E21A1A; foreground: $clr-white");
 			} else {
-				seatButton.putClientProperty(FlatClientProperties.STYLE, "background: $clr-white; foreground: $clr-black");
+				seatButton.addActionListener(e -> {
+					boolean contain = false;
+					for (Ticket chosenTicket : chosenTicketList) {
+						if (chosenTicket.getSeat().equals(seat)) {
+							chosenTicketList.remove(chosenTicket);
+							contain = true;
+							break;
+						}
+					}
+					if (!contain) {
+						chosenTicketList.add(new Ticket(trainJourneyDAO.getTrainJourneyByID(trainJourneyOptionItem.getTrainJourneyID()), seat));
+					}
+					reactToSelectedCoachChanged();
+					reactToChosenListChanged();
+				});
+				
+				boolean contain = false;
+				for (Ticket chosenTicket : chosenTicketList) {
+					if (chosenTicket.getSeat().equals(seat)) {
+						contain = true;
+						break;
+					}
+				}
+				
+				if (contain) {
+					seatButton.putClientProperty(FlatClientProperties.STYLE, "background: #24A94A; foreground: $clr-white");
+				} else {
+					seatButton.putClientProperty(FlatClientProperties.STYLE, "background: $clr-white; foreground: $clr-black");
+				}
 			}
 			
 			container3.add(seatButton);
@@ -398,6 +424,11 @@ public class SeatsChoosingDialog extends JDialog {
 		this.selectedCoach = selectedCoach;
 		reactToSelectedCoachChanged();
 		
+	}
+
+	public void dongDayChuyen() {
+		this.dispose();
+		trainJourneyChoosingDialog.closeDialog();
 	}
 
 }

@@ -21,6 +21,7 @@ import javax.swing.JTextField;
 import com.formdev.flatlaf.FlatClientProperties;
 
 import dao.TrainJourneyDAO;
+import entity.Employee;
 import entity.Station;
 import entity.Train;
 import entity.TrainJourneyOptionItem;
@@ -50,7 +51,7 @@ public class FormSearchTrainJourney extends JPanel {
 	private TrainJourneyDAO trainJourneyDAO;
 	private TrainJourneyChoosingDialog trainJourneyChoosingDialog;
 
-	public FormSearchTrainJourney() {
+	public FormSearchTrainJourney(Employee employee) {
 		this.trainJourneyDAO = new TrainJourneyDAO();
 		setLayout(new BorderLayout());
 		container = new JPanel(new MigLayout("wrap, fill", "[center]", "[center]"));
@@ -95,12 +96,12 @@ public class FormSearchTrainJourney extends JPanel {
 		this.add(container);
 		
 		timKiemButton.addActionListener(e -> {
-//			String gaDi = gaDiTextField.getText().trim();
-//			String gaDen = gaDenTextField.getText().trim();
-//			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-//			LocalDate ngayDi = LocalDate.parse(ngayDiTextField.getText().trim(), dateFormatter);
-//			List<TrainJourneyOptionItem> trainJourneyOptionItemList = trainJourneyDAO.searchTrainJourney(gaDi, gaDen, ngayDi);
-			List<TrainJourneyOptionItem> trainJourneyOptionItemList = trainJourneyDAO.searchTrainJourney("Sài Gòn", "Nha Trang", LocalDate.of(2024, 10, 17));
+			String gaDi = gaDiTextField.getText().trim();
+			String gaDen = gaDenTextField.getText().trim();
+			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+			LocalDate ngayDi = LocalDate.parse(ngayDiTextField.getText().trim(), dateFormatter);
+			List<TrainJourneyOptionItem> trainJourneyOptionItemList = trainJourneyDAO.searchTrainJourney(gaDi, gaDen, ngayDi);
+//			List<TrainJourneyOptionItem> trainJourneyOptionItemList = trainJourneyDAO.searchTrainJourney("Sài Gòn", "Nha Trang", LocalDate.of(2024, 10, 17));
 			
 			if (trainJourneyOptionItemList.isEmpty()) {
 		        Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, "Không tìm thấy chyến tàu");
@@ -112,7 +113,7 @@ public class FormSearchTrainJourney extends JPanel {
 			glassPane.setVisible(true);
 			
 			
-			trainJourneyChoosingDialog = new TrainJourneyChoosingDialog(trainJourneyOptionItemList);
+			trainJourneyChoosingDialog = new TrainJourneyChoosingDialog(trainJourneyOptionItemList, employee);
 			trainJourneyChoosingDialog.setFormSearchTrainJourney(this);
 			trainJourneyChoosingDialog.setModal(true);
 			trainJourneyChoosingDialog.setVisible(true);

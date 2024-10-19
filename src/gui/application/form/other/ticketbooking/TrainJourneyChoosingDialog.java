@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
+import entity.Employee;
 import entity.TrainJourneyOptionItem;
 import gui.application.Application;
 import net.miginfocom.swing.MigLayout;
@@ -29,7 +30,7 @@ public class TrainJourneyChoosingDialog extends JDialog {
 	private JPanel container3;
 	private JButton closeButton;
 	
-	public TrainJourneyChoosingDialog(List<TrainJourneyOptionItem> trainJourneyOptionItemList) {
+	public TrainJourneyChoosingDialog(List<TrainJourneyOptionItem> trainJourneyOptionItemList, Employee employee) {
 		
 		setLayout(new BorderLayout());
 		container = new JPanel(new MigLayout("wrap, fill", "[fill]", "[][fill, grow]"));
@@ -45,7 +46,7 @@ public class TrainJourneyChoosingDialog extends JDialog {
 		container2 = new JPanel(new MigLayout("wrap, fill, insets 0 32 16 32, gap 16", "[500px][500px]", "[fill]"));
 		
 		for (TrainJourneyOptionItem trainJourneyOptionItem : trainJourneyOptionItemList) {
-			TrainJourneyOptionItemCard trainJourneyOptionItemCard = new TrainJourneyOptionItemCard(trainJourneyOptionItem);
+			TrainJourneyOptionItemCard trainJourneyOptionItemCard = new TrainJourneyOptionItemCard(trainJourneyOptionItem, employee, this);
 			container2.add(trainJourneyOptionItemCard, "growx");
 		}
 		
@@ -85,7 +86,7 @@ public class TrainJourneyChoosingDialog extends JDialog {
 		this.formSearchTrainJourney = formSearchTrainJourney;		
 	}
 	
-	private void closeDialog() {
+	public void closeDialog() {
 		JPanel defaultGlassPane = (JPanel) Application.getInstance().getGlassPane();
 		defaultGlassPane.removeAll();
 		Application.getInstance().setGlassPane(defaultGlassPane);

@@ -1,6 +1,5 @@
 package dao;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -15,6 +14,7 @@ import java.util.List;
 
 import connectDB.ConnectDB;
 import entity.Line;
+import entity.Seat;
 import entity.Station;
 import entity.Stop;
 import entity.Train;
@@ -315,6 +315,45 @@ public class TrainJourneyDAO {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	public List<Stop> getStops(TrainJourney trainJourney, Station departureStation, Station arrivalStation) {
+		Connection connection = connectDB.getConnection();
+		List<Stop> stopList = new ArrayList<Stop>();
+		try {
+			PreparedStatement s = connection.prepareStatement("select stopid from dbo.GetStopsForJourney(?, ?, ?)");
+			s.setInt(1, trainJourney.getTrainJourneyID());
+			s.setInt(2, departureStation.getStationID());
+			s.setInt(3, arrivalStation.getStationID());
+			ResultSet rs = s.executeQuery();
+			while (rs.next()) {
+				int stopID = rs.getInt("stopid");
+				stopList.add(new Stop(stopID));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return stopList;
+	}
+
+	public List<Seat> getUnavailableSeats(int trainJourneyID, Station departureStation, Station arrivalStation) {
+		Connection connection = connectDB.getConnection();
+		List<Seat> seatList = new ArrayList<Seat>();
+		try {
+			PreparedStatement s = connection.prepareStatement("select SeatID, SeatNumber FROM dbo.fn_GetUnavailableSeats(?, ?, ?)");
+			s.setInt(1, trainJourneyID);
+			s.setInt(2, departureStation.getStationID());
+			s.setInt(3, arrivalStation.getStationID());
+			ResultSet rs = s.executeQuery();
+			while (rs.next()) {
+				int seatID = rs.getInt("seatID");
+				int seatNumber = rs.getInt("seatNumber");
+				seatList.add(new Seat(seatID, seatNumber));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return seatList;
 	}
 	
 }

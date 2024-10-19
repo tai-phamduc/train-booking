@@ -19,6 +19,15 @@ public class Ticket {
 		this.order = order;
 	}
 
+	public Ticket(TrainJourney trainJourney, Seat seat) {
+		this.trainJourney = trainJourney;
+		this.seat = seat;
+	}
+
+	public Ticket(int ticketID) {
+		this.ticketID = ticketID;
+	}
+
 	public int getTicketID() {
 		return ticketID;
 	}

@@ -21,10 +21,12 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import dao.ServiceDAO;
-import entity.Order;
+import entity.Customer;
+import entity.Employee;
 import entity.Seat;
 import entity.Service;
 import entity.ServiceDetail;
+import entity.Ticket;
 import entity.TrainJourneyOptionItem;
 import net.miginfocom.swing.MigLayout;
 
@@ -54,9 +56,12 @@ public class ServiceChoosingDialog extends JDialog {
 	private JPanel wrapper4;
 	private JButton tiepTucButton;
 	private ServiceDetail chosenServiceDetail;
+	private CheckoutDialog checkoutDialog;
+	private PassengerInfoAddingDialog passengerInfoAddingDialog;
 	
-	public ServiceChoosingDialog(TrainJourneyOptionItem trainJourneyOptionItem, List<Seat> chosenSeatList) {
+	public ServiceChoosingDialog(TrainJourneyOptionItem trainJourneyOptionItem, ArrayList<Ticket> chosenTicketList, Customer customer, Employee employee, PassengerInfoAddingDialog passengerInfoAddingDialog) {
 		
+		this.passengerInfoAddingDialog = passengerInfoAddingDialog;
 		serviceDAO = new ServiceDAO();
 		
 		
@@ -68,7 +73,7 @@ public class ServiceChoosingDialog extends JDialog {
 		chosenServiceDetailList = new ArrayList<ServiceDetail>();
 		// state
 		
-		container = new JPanel(new MigLayout("wrap, fill, insets 16 32", "[grow, fill][375px]", "[fill]"));
+		container = new JPanel(new MigLayout("wrap, fill, insets 16 32", "[grow, fill][450px]", "[fill]"));
 		// chọn dịch vụ container ở góc bên tay trái
 		chonDichVuContainer = new JPanel(new MigLayout("flowy, fill", "[fill]", "[][]"));
 		
@@ -98,7 +103,7 @@ public class ServiceChoosingDialog extends JDialog {
 		gioDichVuLabel = new JLabel("Giỏ dịch vụ");
 		gioDichVuLabel.putClientProperty(FlatClientProperties.STYLE, "font:bold +8");
 		wrapper1.add(gioDichVuLabel);
-		wrapper2 = new JPanel(new MigLayout("wrap, fill", "[fill]"));
+		wrapper2 = new JPanel(new MigLayout("wrap, fill", "[325px]"));
 		wrapper3 = new JPanel(new MigLayout("wrap, fill", "[]push[]"));
 		
 		reactToChosenServiceDetailListChanged();
@@ -125,6 +130,12 @@ public class ServiceChoosingDialog extends JDialog {
 		scroll.setBorder(BorderFactory.createEmptyBorder());
 		scroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
 				"" + "background:$Table.background;" + "track:$Table.background;" + "trackArc:999");
+		
+		tiepTucButton.addActionListener(e -> {
+			checkoutDialog = new CheckoutDialog(trainJourneyOptionItem, chosenTicketList, chosenServiceDetailList, customer, employee, this);
+			checkoutDialog.setModal(true);
+			checkoutDialog.setVisible(true);
+		});
 	}
 
 	private void reactToChosenServiceDetailListChanged() {
@@ -153,9 +164,14 @@ public class ServiceChoosingDialog extends JDialog {
 			productChosenCard.add(priceLabel, "gapleft push");
 			wrapper2.add(productChosenCard);
 			
+			spinnerModel.addChangeListener(e -> {
+				chosenServiceDetail.setQuantity((int) (spinnerModel.getValue()));
+				reactToChosenServiceDetailListChanged();
+			});
+			
 			removeButton.addActionListener(e -> {
-//				for (ServiceDetail serviceDetail)
 				chosenServiceDetailList.remove(chosenServiceDetail);
+				reactToChosenServiceDetailListChanged();
 			});
 		}
 		wrapper2.repaint();
@@ -256,6 +272,11 @@ public class ServiceChoosingDialog extends JDialog {
 		
 		container2.repaint();
 		container2.revalidate();
+	}
+
+	public void dongDayChuyen() {
+		this.dispose();
+		passengerInfoAddingDialog.dongDayChuyen();
 	}
 
 }
